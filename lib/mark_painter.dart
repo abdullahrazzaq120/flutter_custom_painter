@@ -40,7 +40,10 @@ class MarkPainter extends CustomPainter {
         canvas.drawLine(topRight, bottomLeft, paint);
       } else if(mark.type == 3){
         paint.strokeCap = StrokeCap.round;
+        paint.strokeWidth = 4;
         canvas.drawLine(mark.position, mark.endPosition!, paint);
+      } else if(mark.type == 4){
+
       }
     }
   }
