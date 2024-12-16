@@ -1,6 +1,8 @@
 /*
  * Created by Abdullah Razzaq on 10/12/2024.
 */
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import 'mark.dart';
@@ -34,30 +36,56 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _removeMark(Offset position) {
+  void _removeMark(Offset tapPosition) {
     setState(() {
-
-      // Find the mark within a certain distance and remove it
+      // Find the mark or line within a certain radius and remove it
       marks.removeWhere((mark) {
         if (mark.type == 3) {
-         return _isTapNearLine(position, mark.position, mark.endPosition!);
+          // Line marks: check proximity to closest point on the line
+          final Offset closestPoint = _getClosestPointForLine(
+              tapPosition, mark.position, mark.endPosition!);
+          return (tapPosition - closestPoint).distance <= _markRadius;
         }
 
-        return (mark.position - position).distance <=
-            _markRadius; // Check distance
+        // Other marks: check proximity to the center
+        return (mark.position - tapPosition).distance <= _markRadius;
       });
     });
   }
 
+  void _setFocus(Offset tapPosition) {
+    setState(() {
+      for (var mark in marks) {
+        mark.isFocus = false; // Reset focus for all marks
+      }
 
-  bool _isTapNearLine(Offset tap, Offset start, Offset end) {
+      try {
+        final Mark focusedMark = marks.firstWhere((mark) {
+          if (mark.type == 3) {
+            final Offset closestPoint = _getClosestPointForLine(
+                tapPosition, mark.position, mark.endPosition!);
+            return (tapPosition - closestPoint).distance <= _markRadius;
+          }
+          return (mark.position - tapPosition).distance <= _markRadius;
+        });
+
+        focusedMark.isFocus = true;
+        print(json.encode(focusedMark));
+        
+      } catch (e) {
+        // No mark found within the proximity
+      }
+    });
+  }
+
+  Offset _getClosestPointForLine(Offset tap, Offset start, Offset end) {
     // Calculate the shortest distance from the tap to the line segment
     double dx = end.dx - start.dx;
     double dy = end.dy - start.dy;
 
     // If the line is just a point
     if (dx == 0 && dy == 0) {
-      return (tap - start).distance <= _markRadius;
+      return start;
     }
 
     // Calculate the parameter t
@@ -74,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     // Check the distance from the tap to the closest point
-    return (tap - closestPoint).distance <= _markRadius;
+    return closestPoint;
   }
 
   void _updateLine(Offset currentPoint) {
@@ -85,11 +113,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _endLine(Offset endPoint) {
     if (_startPoint != null) {
-      print('Here i am');
-      print(_startPoint);
-      print(_currentPoint);
-      print(endPoint);
-
       setState(() {
         marks.add(
             Mark(position: _startPoint!, endPosition: endPoint, type: type));
@@ -142,6 +165,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   _removeMark(details.localPosition);
                   return;
                 }
+                if (type == 5) {
+                  _setFocus(details.localPosition);
+                  return;
+                }
+
                 _addMark(details.localPosition); // Add mark on touch
               },
               onPanUpdate: type == 3
@@ -179,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.black),
               ),
-              height: MediaQuery.of(context).size.height / 2.5,
+              height: MediaQuery.of(context).size.height / 2.2,
               alignment: Alignment.centerLeft,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -188,44 +216,53 @@ class _HomeScreenState extends State<HomeScreen> {
                     selectedType: 0,
                     child: const Icon(
                       Icons.circle,
-                      color: Colors.red,
-                      size: 20,
+                      color: Colors.teal,
+                      size: 25,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const Divider(),
                   markIcon(
                     selectedType: 1,
                     child: const Icon(
                       Icons.radio_button_unchecked_rounded,
-                      color: Colors.red,
-                      size: 20,
+                      color: Colors.teal,
+                      size: 25,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const Divider(),
                   markIcon(
                     selectedType: 2,
                     child: const Icon(
                       Icons.close_sharp,
-                      color: Colors.red,
-                      size: 20,
+                      color: Colors.teal,
+                      size: 25,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const Divider(),
                   markIcon(
                     selectedType: 3,
                     child: const Divider(
                       thickness: 4,
                       endIndent: 4,
                       indent: 4,
-                      color: Colors.red,
+                      color: Colors.teal,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const Divider(),
                   markIcon(
                     selectedType: 4,
                     child: const Icon(
                       Icons.delete,
-                      color: Colors.red,
+                      color: Colors.teal,
+                      size: 25,
+                    ),
+                  ),
+                  const Divider(),
+                  markIcon(
+                    selectedType: 5,
+                    child: const Icon(
+                      Icons.info_outline,
+                      color: Colors.teal,
                       size: 25,
                     ),
                   ),
@@ -239,22 +276,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget markIcon({required int selectedType, required Widget child}) {
-    return Container(
-      alignment: Alignment.center,
-      decoration: type == selectedType
-          ? BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.black, width: 2),
-            )
-          : null,
-      padding: const EdgeInsets.all(3),
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            type = selectedType;
-          });
-        },
-        child: child,
+    return Expanded(
+      child: Container(
+        alignment: Alignment.center,
+        decoration: type == selectedType
+            ? BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.red, width: 2.5),
+              )
+            : null,
+        margin: const EdgeInsets.all(2),
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              type = selectedType;
+            });
+          },
+          child: child,
+        ),
       ),
     );
   }

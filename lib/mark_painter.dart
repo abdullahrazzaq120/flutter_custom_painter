@@ -12,21 +12,38 @@ class MarkPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint();
+    const markRadius = 10.0;
 
-    paint.color = Colors.red;
+    final paint = Paint();
+    // final focusPaint = Paint()
+    //   ..color = Colors.teal
+    //   ..style = PaintingStyle.stroke
+    //   ..strokeWidth = 3.0;
 
     for (final mark in marks) {
-      if (mark.type == 0){
+      paint.color = mark.isFocus ? Colors.teal : Colors.red;
+
+      if (mark.type == 0) {
         paint.style = PaintingStyle.fill;
-        canvas.drawCircle(mark.position, 8, paint);
-      } else if (mark.type == 1){
+        canvas.drawCircle(mark.position, markRadius, paint);
+
+        // // Draw border if focused
+        // if (mark.isFocus) {
+        //   canvas.drawCircle(mark.position, markRadius + 4.0, focusPaint);
+        // }
+      } else if (mark.type == 1) {
         paint.style = PaintingStyle.stroke;
         paint.strokeWidth = 2;
-        canvas.drawCircle(mark.position, 8, paint);
-      } else if (mark.type == 2){
+        canvas.drawCircle(mark.position, markRadius, paint);
+
+        // // Draw border if focused
+        // if (mark.isFocus) {
+        //   focusPaint.strokeWidth = 2;
+        //   canvas.drawCircle(mark.position, markRadius + 4.0, focusPaint);
+        // }
+      } else if (mark.type == 2) {
         paint.style = PaintingStyle.stroke;
-        paint.strokeWidth = 4;
+        paint.strokeWidth = 3;
 
         // Calculate cross lines based on position and size
         double halfSize = 8;
@@ -38,12 +55,23 @@ class MarkPainter extends CustomPainter {
         // Draw the cross
         canvas.drawLine(topLeft, bottomRight, paint);
         canvas.drawLine(topRight, bottomLeft, paint);
-      } else if(mark.type == 3){
+
+        // // Draw border if focused
+        // if (mark.isFocus) {
+        //   canvas.drawLine(topLeft, bottomRight, focusPaint);
+        //   canvas.drawLine(topRight, bottomLeft, focusPaint);
+        // }
+      } else if (mark.type == 3) {
         paint.strokeCap = StrokeCap.round;
         paint.strokeWidth = 4;
         canvas.drawLine(mark.position, mark.endPosition!, paint);
-      } else if(mark.type == 4){
 
+        // // Highlight the line if it's focused
+        // if (mark.isFocus) {
+        //   focusPaint.strokeCap = StrokeCap.round;
+        //   focusPaint.strokeWidth = 4;
+        //   canvas.drawLine(mark.position, mark.endPosition!, focusPaint);
+        // }
       }
     }
   }

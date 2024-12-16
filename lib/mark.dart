@@ -9,11 +9,13 @@ class Mark {
   final Offset position;
   final Offset? endPosition;
   final int type;
+  bool isFocus;
 
   Mark({
     required this.position,
     this.endPosition,
     required this.type,
+    this.isFocus = false,
   });
 
   // Convert to JSON
@@ -24,6 +26,7 @@ class Mark {
       'x1': endPosition?.dx,
       'y1': endPosition?.dy,
       'type': type,
+      'isFocus': isFocus,
     };
   }
 
@@ -33,6 +36,7 @@ class Mark {
       position: Offset(json['x'], json['y']),
       endPosition: Offset(json['x1'], json['y1']),
       type: json['type'] as int,
+      isFocus: json['isFocus'] as bool,
     );
   }
 }
