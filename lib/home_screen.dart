@@ -1,8 +1,6 @@
 /*
  * Created by Abdullah Razzaq on 10/12/2024.
 */
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 
 import 'mark.dart';
@@ -19,61 +17,70 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Mark> marks = [];
-  int type = 0;
+  int globalType = 0;
+  int previousGlobalType = 0;
   final double _markRadius = 10.0;
+  Offset? focusedMarkInitialPosition;
+  Mark? globalFocusedMark;
 
   Offset? _startPoint; // Starting point of the current line
   Offset? _currentPoint; // Current point during drawing a line
 
-  void _addMark(Offset position) {
-    setState(() {
-      if (type == 3) {
-        _startPoint = position; // Set the starting point
-        _currentPoint = position; // Initialize curre|nt point
-      } else {
-        marks.add(Mark(position: position, type: type)); // Add new mark
-      }
-    });
+  void clearFocus() {
+    for (var mark in marks) {
+      mark.isFocus = false; // Reset focus for all marks
+    }
   }
 
-  void _removeMark(Offset tapPosition) {
-    setState(() {
-      // Find the mark or line within a certain radius and remove it
-      marks.removeWhere((mark) {
+  Mark? getMarkIfExist(Offset tapPosition) {
+    try {
+      clearFocus();
+      final Mark focusedMark = marks.firstWhere((mark) {
         if (mark.type == 3) {
-          // Line marks: check proximity to closest point on the line
           final Offset closestPoint = _getClosestPointForLine(
               tapPosition, mark.position, mark.endPosition!);
           return (tapPosition - closestPoint).distance <= _markRadius;
         }
-
-        // Other marks: check proximity to the center
         return (mark.position - tapPosition).distance <= _markRadius;
       });
-    });
+
+      return focusedMark;
+    } catch (e) {
+      return null;
+    }
   }
 
-  void _setFocus(Offset tapPosition) {
+  void _addMark(Offset position) {
     setState(() {
-      for (var mark in marks) {
-        mark.isFocus = false; // Reset focus for all marks
-      }
+      final Mark? tappedMark = getMarkIfExist(position);
 
-      try {
-        final Mark focusedMark = marks.firstWhere((mark) {
-          if (mark.type == 3) {
-            final Offset closestPoint = _getClosestPointForLine(
-                tapPosition, mark.position, mark.endPosition!);
-            return (tapPosition - closestPoint).distance <= _markRadius;
-          }
-          return (mark.position - tapPosition).distance <= _markRadius;
-        });
+      if (tappedMark == null) {
+        // add new mark
+        final Mark newMark;
+        if (globalType == 3) {
+          _startPoint = position;
+          _currentPoint = position;
 
-        focusedMark.isFocus = true;
-        print(json.encode(focusedMark));
-        
-      } catch (e) {
-        // No mark found within the proximity
+          newMark = Mark(
+            position: position,
+            endPosition: _currentPoint,
+            type: globalType,
+            isFocus: true,
+          );
+        } else {
+          newMark = Mark(
+            position: position,
+            type: globalType,
+            isFocus: true,
+          );
+        }
+
+        marks.add(newMark);
+        focusedMarkInitialPosition = newMark.position;
+      } else {
+        // focus on existing mark
+        tappedMark.isFocus = true;
+        focusedMarkInitialPosition = tappedMark.position;
       }
     });
   }
@@ -108,22 +115,30 @@ class _HomeScreenState extends State<HomeScreen> {
   void _updateLine(Offset currentPoint) {
     setState(() {
       _currentPoint = currentPoint; // Update the current point as user drags
+      processLine(currentPoint);
     });
   }
 
   void _endLine(Offset endPoint) {
     if (_startPoint != null) {
       setState(() {
-        marks.add(
-            Mark(position: _startPoint!, endPosition: endPoint, type: type));
-
-        for (final m in marks) {
-          print("Marks saved: ${m.toJson()}");
-        }
-        _startPoint = null; // Reset start point
-        _currentPoint = null; // Reset current point
+        processLine(endPoint);
+        _startPoint = null;
+        _currentPoint = null;
       });
     }
+  }
+
+  void processLine(Offset endPoint) {
+    final int markIndex = marks.indexWhere((mark) {
+      return mark.position == _startPoint;
+    });
+
+    marks[markIndex] = Mark(
+        position: _startPoint!,
+        endPosition: endPoint,
+        type: globalType,
+        isFocus: true);
   }
 
   @override
@@ -161,30 +176,51 @@ class _HomeScreenState extends State<HomeScreen> {
             flex: 9,
             child: GestureDetector(
               onPanDown: (details) {
-                if (type == 4) {
-                  _removeMark(details.localPosition);
-                  return;
-                }
-                if (type == 5) {
-                  _setFocus(details.localPosition);
+                if (globalType == 5) {
                   return;
                 }
 
+                globalFocusedMark = getMarkIfExist(details.localPosition);
                 _addMark(details.localPosition); // Add mark on touch
               },
-              onPanUpdate: type == 3
-                  ? (details) {
-                      _updateLine(details
-                          .localPosition); // Update the line as user drags
+              onPanUpdate: (details) {
+                setState(() {
+                  if (globalFocusedMark != null) {
+                    final int markIndex = marks.indexWhere((mark) {
+                      return mark.position == globalFocusedMark!.position;
+                    });
+
+                    if (globalFocusedMark!.type == 3) {
+                      final Offset delta = details.localPosition - globalFocusedMark!.position;
+                      globalFocusedMark = Mark(
+                        position: details.localPosition,
+                        endPosition: globalFocusedMark!.endPosition != null
+                            ? globalFocusedMark!.endPosition! + delta : null,
+                        type: 3,
+                        isFocus: true,
+                      );
+                    } else {
+                      globalFocusedMark = Mark(
+                          position: details.localPosition,
+                          type: globalFocusedMark!.type,
+                          isFocus: true);
                     }
-                  : null,
-              onPanEnd: type == 3
-                  ? (details) {
-                      if (_currentPoint != null) {
-                        _endLine(_currentPoint!); // Finish the line
-                      }
+                    marks[markIndex] = globalFocusedMark!;
+                    focusedMarkInitialPosition = globalFocusedMark!.position;
+                  } else {
+                    if (globalType == 3) {
+                      _updateLine(details.localPosition);
                     }
-                  : null,
+                  }
+                });
+              },
+              onPanEnd: (details) {
+                if (globalType == 3) {
+                  if (_currentPoint != null) {
+                    _endLine(_currentPoint!); // Finish the line
+                  }
+                }
+              },
               child: Stack(
                 children: [
                   Positioned.fill(
@@ -208,61 +244,61 @@ class _HomeScreenState extends State<HomeScreen> {
                 border: Border.all(color: Colors.black),
               ),
               height: MediaQuery.of(context).size.height / 2.2,
-              alignment: Alignment.centerLeft,
+              alignment: Alignment.center,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   markIcon(
                     selectedType: 0,
-                    child: const Icon(
+                    child: Icon(
                       Icons.circle,
-                      color: Colors.teal,
+                      color: globalType == 0 ? Colors.red : Colors.teal,
                       size: 25,
                     ),
                   ),
-                  const Divider(),
+                  const Divider(height: 1),
                   markIcon(
                     selectedType: 1,
-                    child: const Icon(
+                    child: Icon(
                       Icons.radio_button_unchecked_rounded,
-                      color: Colors.teal,
+                      color: globalType == 1 ? Colors.red : Colors.teal,
                       size: 25,
                     ),
                   ),
-                  const Divider(),
+                  const Divider(height: 1),
                   markIcon(
                     selectedType: 2,
-                    child: const Icon(
+                    child: Icon(
                       Icons.close_sharp,
-                      color: Colors.teal,
+                      color: globalType == 2 ? Colors.red : Colors.teal,
                       size: 25,
                     ),
                   ),
-                  const Divider(),
+                  const Divider(height: 1),
                   markIcon(
                     selectedType: 3,
-                    child: const Divider(
+                    child: Divider(
                       thickness: 4,
                       endIndent: 4,
                       indent: 4,
-                      color: Colors.teal,
+                      color: globalType == 3 ? Colors.red : Colors.teal,
                     ),
                   ),
-                  const Divider(),
+                  const Divider(height: 1),
                   markIcon(
                     selectedType: 4,
-                    child: const Icon(
+                    child: Icon(
                       Icons.delete,
-                      color: Colors.teal,
+                      color: globalType == 4 ? Colors.red : Colors.teal,
                       size: 25,
                     ),
                   ),
-                  const Divider(),
+                  const Divider(height: 1),
                   markIcon(
                     selectedType: 5,
-                    child: const Icon(
-                      Icons.info_outline,
-                      color: Colors.teal,
+                    child: Icon(
+                      Icons.camera_alt,
+                      color: globalType == 5 ? Colors.red : Colors.teal,
                       size: 25,
                     ),
                   ),
@@ -277,21 +313,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget markIcon({required int selectedType, required Widget child}) {
     return Expanded(
-      child: Container(
-        alignment: Alignment.center,
-        decoration: type == selectedType
-            ? BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.red, width: 2.5),
-              )
-            : null,
-        margin: const EdgeInsets.all(2),
-        child: InkWell(
-          onTap: () {
-            setState(() {
-              type = selectedType;
-            });
-          },
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            previousGlobalType = globalType;
+            globalType = selectedType;
+            if (selectedType == 4) {
+              globalType = previousGlobalType;
+              marks.removeWhere((mark) {
+                return mark.position == focusedMarkInitialPosition;
+              });
+            }
+          });
+        },
+        child: Container(
+          alignment: Alignment.center,
+          margin: const EdgeInsets.all(2),
           child: child,
         ),
       ),
