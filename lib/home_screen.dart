@@ -19,17 +19,25 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Mark> marks = [];
   int globalType = 0;
   int previousGlobalType = 0;
-  final double _markRadius = 10.0;
+  final double _markRadius = 20.0;
   Offset? focusedMarkInitialPosition;
   Mark? globalFocusedMark;
 
   Offset? _startPoint; // Starting point of the current line
   Offset? _currentPoint; // Current point during drawing a line
 
+  Offset? initialTouchLineOffset;
+  bool isTouchedNearStartingPoint = false;
+  bool isTouchedNearEndingPoint = false;
+
   void clearFocus() {
     for (var mark in marks) {
       mark.isFocus = false; // Reset focus for all marks
     }
+  }
+
+  bool isMarkPositionNear(Offset targetedPosition, Offset tapPosition) {
+    return (targetedPosition - tapPosition).distance <= _markRadius;;
   }
 
   Mark? getMarkIfExist(Offset tapPosition) {
@@ -41,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
               tapPosition, mark.position, mark.endPosition!);
           return (tapPosition - closestPoint).distance <= _markRadius;
         }
-        return (mark.position - tapPosition).distance <= _markRadius;
+        return isMarkPositionNear(mark.position, tapPosition);
       });
 
       return focusedMark;
@@ -52,9 +60,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _addMark(Offset position) {
     setState(() {
-      final Mark? tappedMark = getMarkIfExist(position);
+      globalFocusedMark = getMarkIfExist(position);
 
-      if (tappedMark == null) {
+      if (globalFocusedMark == null) {
         // add new mark
         final Mark newMark;
         if (globalType == 3) {
@@ -79,8 +87,8 @@ class _HomeScreenState extends State<HomeScreen> {
         focusedMarkInitialPosition = newMark.position;
       } else {
         // focus on existing mark
-        tappedMark.isFocus = true;
-        focusedMarkInitialPosition = tappedMark.position;
+        globalFocusedMark!.isFocus = true;
+        focusedMarkInitialPosition = globalFocusedMark!.position;
       }
     });
   }
@@ -175,13 +183,34 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             flex: 9,
             child: GestureDetector(
+              onPanStart: (details){
+                if (globalFocusedMark != null && globalFocusedMark!.type == 3) {
+                  // Calculate the initial offset relative to the line's start position
+                  initialTouchLineOffset = details.localPosition - globalFocusedMark!.position;
+                }
+              },
               onPanDown: (details) {
                 if (globalType == 5) {
                   return;
                 }
 
-                globalFocusedMark = getMarkIfExist(details.localPosition);
                 _addMark(details.localPosition); // Add mark on touch
+
+                if (globalFocusedMark != null && globalFocusedMark!.type == 3){
+                  if (isMarkPositionNear(globalFocusedMark!.position, details.localPosition)){
+                    isTouchedNearStartingPoint = true;
+                    isTouchedNearEndingPoint = false;
+                  } else if(isMarkPositionNear(globalFocusedMark!.endPosition!, details.localPosition)){
+                    isTouchedNearStartingPoint = false;
+                    isTouchedNearEndingPoint = true;
+                  } else{
+                    isTouchedNearStartingPoint = false;
+                    isTouchedNearEndingPoint = false;
+                  }
+                } else {
+                  isTouchedNearStartingPoint = false;
+                  isTouchedNearEndingPoint = false;
+                }
               },
               onPanUpdate: (details) {
                 setState(() {
@@ -191,14 +220,32 @@ class _HomeScreenState extends State<HomeScreen> {
                     });
 
                     if (globalFocusedMark!.type == 3) {
-                      final Offset delta = details.localPosition - globalFocusedMark!.position;
-                      globalFocusedMark = Mark(
-                        position: details.localPosition,
-                        endPosition: globalFocusedMark!.endPosition != null
-                            ? globalFocusedMark!.endPosition! + delta : null,
-                        type: 3,
-                        isFocus: true,
-                      );
+                      if (isTouchedNearStartingPoint){
+                        globalFocusedMark = Mark(
+                          position: details.localPosition,
+                          endPosition: globalFocusedMark!.endPosition,
+                          type: 3,
+                          isFocus: true,
+                        );
+                      } else if(isTouchedNearEndingPoint){
+                        globalFocusedMark = Mark(
+                          position: globalFocusedMark!.position,
+                          endPosition: details.localPosition,
+                          type: 3,
+                          isFocus: true,
+                        );
+                      } else {
+                        // Ensure the drag respects the initial offset
+                        final Offset newStart = details.localPosition - initialTouchLineOffset!;
+                        final Offset newEnd = newStart + (globalFocusedMark!.endPosition! - globalFocusedMark!.position);
+
+                        globalFocusedMark = Mark(
+                          position: newStart,
+                          endPosition: newEnd,
+                          type: 3,
+                          isFocus: true,
+                        );
+                      }
                     } else {
                       globalFocusedMark = Mark(
                           position: details.localPosition,
