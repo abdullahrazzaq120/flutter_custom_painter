@@ -6,16 +6,18 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class Mark {
-  final Offset position;
-  final Offset? endPosition;
-  final int type;
+  Offset position;
+  Offset? endPosition;
+  int type;
   bool isFocus;
+  List<String>? imagePaths;
 
   Mark({
     required this.position,
     this.endPosition,
     required this.type,
     this.isFocus = false,
+    this.imagePaths,
   });
 
   // Convert to JSON
@@ -27,6 +29,7 @@ class Mark {
       'y1': endPosition?.dy,
       'type': type,
       'isFocus': isFocus,
+      'imagePaths': imagePaths,
     };
   }
 
@@ -37,6 +40,7 @@ class Mark {
       endPosition: Offset(json['x1'], json['y1']),
       type: json['type'] as int,
       isFocus: json['isFocus'] as bool,
+      imagePaths: json['imagePaths'] != null ? List<String>.from(json['imagePaths']) : null,
     );
   }
 }
