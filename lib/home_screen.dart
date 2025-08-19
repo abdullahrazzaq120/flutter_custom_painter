@@ -2,6 +2,7 @@
  * Created by Abdullah Razzaq on 10/12/2024.
 */
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 
 import 'mark.dart';
 import 'mark_painter.dart';
+import 'dart:ui' as ui;
 
 class HomeScreen extends StatefulWidget {
   static String routeName = 'home-screen';
@@ -22,6 +24,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Mark> marks = [];
+
   int globalType = 0;
   int previousGlobalType = 0;
   Mark? globalFocusedMark;
@@ -34,6 +37,90 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isTouchedNearEndingPoint = false;
 
   bool isPopupVisible = true;
+
+  double imageHeight = 0;
+  double imageWidth = 0;
+  double availableDeviceHeight = 0;
+  double availableDeviceWidth = 0;
+  double heightScale = 0;
+  double widthScale = 0;
+
+  String imageUrl =
+      "https://app.speedautosystems.com/app/images/suv_exterior.jpg";
+  final GlobalKey _firstItemKey = GlobalKey();
+  double scale = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    init();
+  }
+
+  void init() async {
+    getCanvasSize();
+    await fetchImageSize();
+    getDimensionScale();
+    setCanvasDimension();
+    _initializeDefaultMarks();
+  }
+
+  void _initializeDefaultMarks() {
+    // Ensure scale is calculated before adding marks
+    marks.addAll([
+      Mark(position: Offset(161 * scale, 209 * scale), type: 1),
+      Mark(
+        position: Offset(133 * scale, 122 * scale),
+        type: 1,
+      ),
+      Mark(
+        position: Offset(151 * scale, 255 * scale),
+        endPosition: Offset(150 * scale, 349 * scale),
+        type: 3,
+      ),
+      Mark(position: Offset(31 * scale, 332 * scale), type: 2),
+    ]);
+    setState(() {}); // Update UI if marks are added after initial build
+  }
+
+  void getCanvasSize() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final RenderBox renderBox =
+          _firstItemKey.currentContext!.findRenderObject() as RenderBox;
+      final size = renderBox.size;
+
+      availableDeviceHeight = size.height;
+      availableDeviceWidth = size.width;
+
+      print('Available Device Height: $availableDeviceHeight');
+      print('Available Device Width: $availableDeviceWidth');
+    });
+  }
+
+  Future<void> fetchImageSize() async {
+    ui.Image image = await AppUtils.getImageDimensions(imageUrl);
+
+    imageHeight = image.height.toDouble();
+    imageWidth = image.width.toDouble();
+
+    print('Image Height: $imageHeight');
+    print('Image Width: $imageWidth');
+  }
+
+  void getDimensionScale() {
+    heightScale = availableDeviceHeight / imageHeight;
+    widthScale = availableDeviceWidth / imageWidth;
+    scale = min(heightScale, widthScale);
+  }
+
+  void setCanvasDimension() {
+    setState(() {
+      imageHeight *= scale;
+      imageWidth *= scale;
+    });
+
+    print('New Image Height: $imageHeight');
+    print('New Image Width: $imageWidth');
+  }
 
   void clearFocus() {
     for (var mark in marks) {
@@ -49,25 +136,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (globalFocusedMark == null) {
         // add new mark
-        final Mark newMark;
+        final Mark newMark = Mark(
+          position: position,
+          type: globalType,
+          isFocus: true,
+          endPosition: globalType == 3 ? position : null,
+        );
+
         if (globalType == 3) {
           _startPoint = position;
           _currentPoint = position;
-
-          newMark = Mark(
-            position: position,
-            endPosition: _currentPoint,
-            type: globalType,
-            isFocus: true,
-          );
-        } else {
-          newMark = Mark(
-            position: position,
-            type: globalType,
-            isFocus: true,
-          );
         }
-
         marks.add(newMark);
         globalFocusedMark = newMark;
       } else {
@@ -114,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Custom Marks'),
-        backgroundColor: Colors.red,
+        backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -144,103 +223,120 @@ class _HomeScreenState extends State<HomeScreen> {
             flex: 9,
             child: Stack(
               children: [
-                GestureDetector(
-                  onPanStart: (details) {
-                    if (globalType == 5) {
-                      return;
-                    }
-
-                    if (globalFocusedMark != null &&
-                        globalFocusedMark!.type == 3) {
-                      // Calculate the initial offset relative to the line's start position
-                      initialTouchLineOffset =
-                          details.localPosition - globalFocusedMark!.position;
-                    }
-                  },
-                  onPanDown: (details) {
-                    if (globalType == 5) {
-                      return;
-                    }
-
-                    _addMark(details.localPosition); // Add mark on touch
-
-                    if (globalFocusedMark != null &&
-                        globalFocusedMark!.type == 3) {
-                      if (AppUtils.isMarkPositionNear(
-                          globalFocusedMark!.position, details.localPosition)) {
-                        isTouchedNearStartingPoint = true;
-                        isTouchedNearEndingPoint = false;
-                      } else if (AppUtils.isMarkPositionNear(
-                          globalFocusedMark!.endPosition!,
-                          details.localPosition)) {
-                        isTouchedNearStartingPoint = false;
-                        isTouchedNearEndingPoint = true;
-                      } else {
-                        isTouchedNearStartingPoint = false;
-                        isTouchedNearEndingPoint = false;
-                      }
-                    } else {
-                      isTouchedNearStartingPoint = false;
-                      isTouchedNearEndingPoint = false;
-                    }
-                  },
-                  onPanUpdate: (details) {
-                    setState(() {
-                      if (globalFocusedMark != null) {
-                        final int markIndex = marks.indexWhere((mark) {
-                          return mark.position == globalFocusedMark!.position;
-                        });
-
-                        if (globalFocusedMark!.type == 3) {
-                          if (isTouchedNearStartingPoint) {
-                            globalFocusedMark!.position = details.localPosition;
-                            globalFocusedMark!.isFocus = true;
-                          } else if (isTouchedNearEndingPoint) {
-                            globalFocusedMark!.endPosition = details.localPosition;
-                            globalFocusedMark!.isFocus = true;
-                          } else {
-                            final Offset newStart = details.localPosition - initialTouchLineOffset!;
-                            final Offset newEnd = newStart + (globalFocusedMark!.endPosition! - globalFocusedMark!.position);
-
-                            globalFocusedMark!.position = newStart;
-                            globalFocusedMark!.endPosition = newEnd;
-                            globalFocusedMark!.isFocus = true;
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    key: _firstItemKey,
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      height: imageHeight,
+                      width: imageWidth,
+                      child: GestureDetector(
+                        // Offset = (horizontal distance from left, vertical distance from top) inside the container.
+                        onPanStart: (details) {
+                          if (globalType == 5) {
+                            return;
                           }
-                        } else {
-                          globalFocusedMark!.position = details.localPosition;
-                          globalFocusedMark!.isFocus = true;
-                        }
-                        marks[markIndex] = globalFocusedMark!;
-                      } else {
-                        if (globalType == 3) {
-                          _updateLine(details.localPosition);
-                        }
-                      }
-                    });
-                  },
-                  onPanEnd: (details) {
-                    if (globalType == 3) {
-                      if (_currentPoint != null) {
-                        _endLine(_currentPoint!); // Finish the line
-                      }
-                    }
-                  },
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: Image.asset(
-                          'assets/images/car_interior.jpg',
-                          fit: BoxFit.fill,
+
+                          if (globalFocusedMark != null &&
+                              globalFocusedMark!.type == 3) {
+                            // Calculate the initial offset relative to the line's start position
+                            initialTouchLineOffset = details.localPosition -
+                                globalFocusedMark!.position;
+                          }
+                        },
+                        onPanDown: (details) {
+                          if (globalType == 5) {
+                            // Type 5 is camera, no drawing action
+                            return;
+                          }
+
+                          _addMark(details.localPosition);
+
+                          // Determine if the touch is near the start or end of a line mark
+                          if (globalFocusedMark?.type == 3) {
+                            // Type 3 is line
+                            isTouchedNearStartingPoint =
+                                AppUtils.isMarkPositionNear(
+                                    globalFocusedMark!.position,
+                                    details.localPosition);
+                            isTouchedNearEndingPoint =
+                                AppUtils.isMarkPositionNear(
+                                        globalFocusedMark!.endPosition!,
+                                        details.localPosition) &&
+                                    !isTouchedNearStartingPoint;
+                          }
+                        },
+                        onPanUpdate: (details) {
+                          if (globalFocusedMark == null && globalType == 3) {
+                            _updateLine(clampToCanvas(details.localPosition));
+                          }
+
+                          setState(() {
+                            final int markIndex = marks.indexWhere((mark) =>
+                                mark.position == globalFocusedMark!.position);
+
+                            if (markIndex == -1) {
+                              return; // Should not happen if globalFocusedMark is not null
+                            }
+
+                            globalFocusedMark!.isFocus =
+                                true; // Ensure focus is maintained
+
+                            if (globalFocusedMark!.type == 3) {
+                              if (isTouchedNearStartingPoint) {
+                                globalFocusedMark!.position =
+                                    clampToCanvas(details.localPosition);
+                              } else if (isTouchedNearEndingPoint) {
+                                globalFocusedMark!.endPosition =
+                                    clampToCanvas(details.localPosition);
+                              } else if (initialTouchLineOffset != null) {
+                                // Move the entire line
+                                final Offset newStart =
+                                    clampToCanvas(details.localPosition) -
+                                        initialTouchLineOffset!;
+                                final Offset newEnd = newStart +
+                                    (globalFocusedMark!.endPosition! -
+                                        globalFocusedMark!.position);
+                                globalFocusedMark!.position =
+                                    clampToCanvas(newStart);
+                                globalFocusedMark!.endPosition =
+                                    clampToCanvas(newEnd);
+                              }
+                            } else {
+                              globalFocusedMark!.position =
+                                  clampToCanvas(details.localPosition);
+                            }
+                            marks[markIndex] = globalFocusedMark!;
+                          });
+                        },
+                        onPanEnd: (details) {
+                          if (globalType == 3) {
+                            if (_currentPoint != null) {
+                              _endLine(_currentPoint!); // Finish the line
+                            }
+                          }
+                        },
+                        child: Stack(
+                          children: [
+                            Image.network(
+                              imageUrl,
+                            ),
+                            CustomPaint(
+                              size: Size.infinite,
+                              painter: MarkPainter(marks: marks),
+                            ),
+                          ],
                         ),
                       ),
-                      CustomPaint(
-                        size: Size.infinite,
-                        painter: MarkPainter(marks: marks),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-                if (isPopupVisible && globalFocusedMark != null && globalFocusedMark!.imagePaths != null && globalFocusedMark!.imagePaths!.isNotEmpty)
+                // captured images
+                if (isPopupVisible &&
+                    globalFocusedMark != null &&
+                    globalFocusedMark!.imagePaths != null &&
+                    globalFocusedMark!.imagePaths!.isNotEmpty)
                   Positioned(
                     left: globalFocusedMark!.position.dx - 0,
                     // Adjust as needed for alignment
@@ -249,7 +345,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Material(
                       color: Colors.transparent,
                       child: Container(
-                        width: 120,
+                        width: globalFocusedMark!.imagePaths!.length > 1
+                            ? 100
+                            : 55,
                         height: 80,
                         padding: const EdgeInsets.all(4.0),
                         decoration: BoxDecoration(
@@ -271,34 +369,43 @@ class _HomeScreenState extends State<HomeScreen> {
                             SizedBox(
                               height: 40,
                               child: GridView.builder(
-                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      crossAxisSpacing: 8,
-                                      mainAxisSpacing: 8,
-                                      childAspectRatio: 1,
-                                    ),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount:
+                                        globalFocusedMark!.imagePaths!.length >
+                                                1
+                                            ? 2
+                                            : 1,
+                                    crossAxisSpacing: 8,
+                                    mainAxisSpacing: 8,
+                                    childAspectRatio: 1,
+                                  ),
                                   physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: globalFocusedMark!.imagePaths!.length.clamp(0, 2),
+                                  itemCount: globalFocusedMark!
+                                      .imagePaths!.length
+                                      .clamp(0, 2),
                                   itemBuilder: (context, index) {
-                                      return Image.file(
-                                        File(globalFocusedMark!.imagePaths![index]),
-                                        width: 40,
-                                        height: 40,
-                                        fit: BoxFit.cover,
-                                      );
-                                    }),
-                              ),
+                                    return Image.file(
+                                      File(globalFocusedMark!
+                                          .imagePaths![index]),
+                                      width: 40,
+                                      height: 40,
+                                      fit: BoxFit.cover,
+                                    );
+                                  }),
+                            ),
                             GestureDetector(
                               onTap: () {},
                               child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   Text(
-                                    "See More",
-                                    style: TextStyle(color: Colors.blue, fontSize: 12),
+                                    "... more",
+                                    style: TextStyle(
+                                        color: Colors.blue, fontSize: 10),
                                   ),
-                                  SizedBox(width: 4),
-                                  Icon(Icons.arrow_forward, size: 16, color: Colors.blue),
+                                  // SizedBox(width: 4),
+                                  // Icon(Icons.arrow_forward, size: 16, color: Colors.blue),
                                 ],
                               ),
                             ),
@@ -316,10 +423,7 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.black),
               ),
-              height: MediaQuery
-                  .of(context)
-                  .size
-                  .height / 2.2,
+              height: MediaQuery.of(context).size.height / 2.2,
               alignment: Alignment.center,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -442,6 +546,13 @@ class _HomeScreenState extends State<HomeScreen> {
           child: child,
         ),
       ),
+    );
+  }
+
+  Offset clampToCanvas(Offset point) {
+    return Offset(
+      point.dx.clamp(0.0, imageWidth),
+      point.dy.clamp(0.0, imageHeight),
     );
   }
 }

@@ -1,9 +1,12 @@
 /*
  * Created by Abdullah Razzaq on 25/12/2024.
 */
-import 'dart:ui';
+import 'dart:async';
+
+import 'package:flutter/material.dart';
 
 import 'mark.dart';
+import 'dart:ui' as ui;
 
 class AppUtils {
   static const double _markRadius = 20.0;
@@ -55,4 +58,16 @@ class AppUtils {
     return (targetedPosition - tapPosition).distance <= _markRadius;
   }
 
+  static Future<ui.Image> getImageDimensions(String imageUrl) async {
+    final Completer<ui.Image> completer = Completer();
+    final NetworkImage networkImage = NetworkImage(imageUrl);
+
+    networkImage.resolve(const ImageConfiguration()).addListener(
+      ImageStreamListener((ImageInfo info, bool _) {
+        completer.complete(info.image);
+      }),
+    );
+
+    return completer.future;
+  }
 }
