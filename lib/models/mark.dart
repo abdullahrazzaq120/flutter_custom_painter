@@ -11,6 +11,7 @@ class Mark {
   int type;
   bool isFocus;
   List<String>? imagePaths;
+  bool isNew;
 
   Mark({
     required this.position,
@@ -18,6 +19,7 @@ class Mark {
     required this.type,
     this.isFocus = false,
     this.imagePaths,
+    this.isNew = false,
   });
 
   // Convert to JSON
@@ -30,6 +32,7 @@ class Mark {
       'type': type,
       'isFocus': isFocus,
       'imagePaths': imagePaths,
+      'isNew': isNew,
     };
   }
 
@@ -41,6 +44,7 @@ class Mark {
       type: json['type'] as int,
       isFocus: json['isFocus'] as bool,
       imagePaths: json['imagePaths'] != null ? List<String>.from(json['imagePaths']) : null,
+      isNew: json['isNew'] as bool,
     );
   }
 }

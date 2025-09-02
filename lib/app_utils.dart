@@ -4,12 +4,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-import 'mark.dart';
+import 'models/mark.dart';
 import 'dart:ui' as ui;
 
 class AppUtils {
   static const double _markRadius = 20.0;
+
   static Offset getClosestPointForLine(Offset tap, Offset start, Offset end) {
     // Calculate the shortest distance from the tap to the line segment
     double dx = end.dx - start.dx;
@@ -37,7 +39,7 @@ class AppUtils {
     return closestPoint;
   }
 
-  static Mark? getMarkIfExist(List<Mark> marks , Offset tapPosition) {
+  static Mark? getMarkIfExist(List<Mark> marks, Offset tapPosition) {
     try {
       final Mark focusedMark = marks.firstWhere((mark) {
         if (mark.type == 3) {
@@ -69,5 +71,61 @@ class AppUtils {
     );
 
     return completer.future;
+  }
+
+  static InputDecoration buildInputDecoration(
+      {String? hint, required bool isTextField}) {
+    return InputDecoration(
+      focusedBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.grey, width: 0),
+        borderRadius: BorderRadius.all(Radius.circular(5)),
+      ),
+      enabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.grey, width: 0),
+        borderRadius: BorderRadius.all(Radius.circular(5)),
+      ),
+      suffixIcon: isTextField == true
+          ? null
+          : const Icon(
+              Icons.expand_more,
+              color: Colors.black45,
+            ),
+      filled: true,
+      hintText: hint ?? '',
+      hintStyle: const TextStyle(color: Colors.grey),
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.all(10),
+    );
+  }
+
+  static void presentDatePicker(BuildContext context, DateTime? currentDate, Function(DateTime) onDatePicked) {
+    showDatePicker(
+      context: context,
+      initialDate: currentDate ?? DateTime.now(),
+      firstDate: DateTime(
+          DateTime.now().year, DateTime.now().month, DateTime.now().day),
+      lastDate: DateTime(2030),
+    ).then((value) {
+      if (value == null) return;
+      onDatePicked(value); // update date
+    });
+  }
+
+  static Future<void> presentTimePicker(BuildContext context, Function(TimeOfDay) onTimePicked) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      helpText: "Select Time",
+    );
+
+    if (picked != null) {
+      onTimePicked(picked);
+    }
+  }
+
+  static String formatTimeOfDay(TimeOfDay tod) {
+    final now = DateTime.now();
+    final dt = DateTime(now.year, now.month, now.day, tod.hour, tod.minute);
+    return DateFormat("h:mm a").format(dt);
   }
 }

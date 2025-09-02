@@ -3,7 +3,7 @@
 */
 import 'package:flutter/material.dart';
 
-import 'mark.dart';
+import '../models/mark.dart';
 
 class MarkPainter extends CustomPainter {
   final List<Mark> marks;
@@ -25,15 +25,19 @@ class MarkPainter extends CustomPainter {
       canvas.drawRect(
         Rect.fromCenter(
           center: center,
-          width: 30,
-          height: 30,
+          width: 25,
+          height: 25,
         ),
         borderPaint,
       );
     }
 
     for (final mark in marks) {
-      paint.color = Colors.red;
+      if (mark.isNew) {
+        paint.color = Colors.red;
+      } else {
+        paint.color = Colors.teal;
+      }
 
       // To draw a rectangular border around the mark:
       if (mark.isFocus) {
@@ -59,10 +63,14 @@ class MarkPainter extends CustomPainter {
 
           // Calculate cross lines based on position and size
           const double halfSize = 8;
-          final Offset topLeft = mark.position - const Offset(halfSize, halfSize);
-          final Offset topRight = mark.position + const Offset(halfSize, -halfSize);
-          final Offset bottomLeft = mark.position + const Offset(-halfSize, halfSize);
-          final Offset bottomRight = mark.position + const Offset(halfSize, halfSize);
+          final Offset topLeft =
+              mark.position - const Offset(halfSize, halfSize);
+          final Offset topRight =
+              mark.position + const Offset(halfSize, -halfSize);
+          final Offset bottomLeft =
+              mark.position + const Offset(-halfSize, halfSize);
+          final Offset bottomRight =
+              mark.position + const Offset(halfSize, halfSize);
 
           // Draw the cross
           canvas.drawLine(topLeft, bottomRight, paint);
@@ -76,7 +84,6 @@ class MarkPainter extends CustomPainter {
           }
           break;
         default:
-
           break;
       }
     }
