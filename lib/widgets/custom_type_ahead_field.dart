@@ -2,7 +2,7 @@
  * Created by Abdullah Razzaq on 01/05/2025.
 */
 import 'package:flutter/material.dart';
-import 'package:flutter_custom_painter/app_utils.dart';
+import 'package:flutter_custom_painter/helpers/app_utils.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class CustomTypeAheadField<T> extends StatelessWidget {

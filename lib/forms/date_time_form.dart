@@ -1,19 +1,27 @@
 /*
  * Created by Abdullah Razzaq on 01/09/2025.
 */
-import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_custom_painter/app_utils.dart';
+import 'package:flutter_custom_painter/helpers/app_utils.dart';
 import 'package:intl/intl.dart' as intl;
 
-class DateTimeForm extends StatelessWidget {
-  DateTime? _date;
-  TimeOfDay? _time;
-  DateTime? _closingDate;
-  TimeOfDay? _closingTime;
+class DateTimeForm extends StatefulWidget {
 
   DateTimeForm({super.key});
+
+  @override
+  State<DateTimeForm> createState() => _DateTimeFormState();
+}
+
+class _DateTimeFormState extends State<DateTimeForm> {
+  DateTime? _date;
+
+  TimeOfDay? _time;
+
+  DateTime? _closingDate;
+
+  TimeOfDay? _closingTime;
 
   @override
   Widget build(BuildContext context) {

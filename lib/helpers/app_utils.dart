@@ -6,7 +6,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'models/mark.dart';
+import '../models/mark.dart';
 import 'dart:ui' as ui;
 
 class AppUtils {

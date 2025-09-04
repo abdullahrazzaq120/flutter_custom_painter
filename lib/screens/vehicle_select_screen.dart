@@ -6,25 +6,27 @@ import 'package:flutter_custom_painter/forms/customer_form.dart';
 import 'package:flutter_custom_painter/forms/date_time_form.dart';
 import 'package:flutter_custom_painter/forms/vehicle_form.dart';
 import 'package:flutter_custom_painter/forms/workshop_form.dart';
+import 'package:flutter_custom_painter/screens/checklist_screen.dart';
 import 'package:flutter_custom_painter/screens/exterior_screen.dart';
 
-import '../form_enum.dart';
+import '../enums/form_enum.dart';
 
 class VehicleSelectScreen extends StatelessWidget {
-  VehicleSelectScreen({super.key});
+  const VehicleSelectScreen({super.key});
   static String routeName = 'vehicle-select-screen';
 
   @override
   Widget build(BuildContext context) {
 
-    final args = ModalRoute.of(context)!.settings.arguments as List<FormEnum>;
-    print(args);
+    final args = ModalRoute.of(context)!.settings.arguments as Map;
+    final title = args['title'];
+    final formEnum = args['args'] as List<FormEnum>;
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Vehicle Select Screen'),
-        backgroundColor: Colors.teal,
+        title: Text(title),
+        backgroundColor: Colors.red,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -32,10 +34,10 @@ class VehicleSelectScreen extends StatelessWidget {
           padding: const EdgeInsets.all(12.0),
           child: Column(
             children: [
-              args.contains(FormEnum.vehicle) ? VehicleForm() : const SizedBox(),
-              args.contains(FormEnum.customer) ? CustomerForm() : const SizedBox(),
-              args.contains(FormEnum.workshop) ? WorkshopForm() : const SizedBox(),
-              args.contains(FormEnum.date) ? DateTimeForm() : const SizedBox(),
+              formEnum.contains(FormEnum.vehicle) ? VehicleForm() : const SizedBox(),
+              formEnum.contains(FormEnum.customer) ? CustomerForm() : const SizedBox(),
+              formEnum.contains(FormEnum.workshop) ? WorkshopForm() : const SizedBox(),
+              formEnum.contains(FormEnum.date) ? DateTimeForm() : const SizedBox(),
               const SizedBox(height: 14),
               Column(
                 children: [
@@ -44,7 +46,7 @@ class VehicleSelectScreen extends StatelessWidget {
                     margin: const EdgeInsets.only(top: 10),
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.of(context).pushNamed(ExteriorScreen.routeName);
+                        Navigator.of(context).pushNamed(ChecklistScreen.routeName);
                       },
                       label: const Text("Next"),
                       style: ElevatedButton.styleFrom(

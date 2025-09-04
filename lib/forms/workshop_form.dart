@@ -3,15 +3,23 @@
 */
 import 'package:flutter/material.dart';
 
-import '../app_utils.dart';
+import '../helpers/app_utils.dart';
 import '../widgets/custom_type_ahead_field.dart';
 
-class WorkshopForm extends StatelessWidget {
-  final TextEditingController _searchWorkshopName = TextEditingController();
-  final TextEditingController _workshopType = TextEditingController();
-  final TextEditingController _workshopService = TextEditingController();
+class WorkshopForm extends StatefulWidget {
 
   WorkshopForm({super.key});
+
+  @override
+  State<WorkshopForm> createState() => _WorkshopFormState();
+}
+
+class _WorkshopFormState extends State<WorkshopForm> {
+  final TextEditingController _searchWorkshopName = TextEditingController();
+
+  final TextEditingController _workshopType = TextEditingController();
+
+  final TextEditingController _workshopService = TextEditingController();
 
   @override
   Widget build(BuildContext context) {

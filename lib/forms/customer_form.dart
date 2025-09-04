@@ -5,13 +5,22 @@ import 'package:flutter/material.dart';
 
 import '../widgets/custom_type_ahead_field.dart';
 
-class CustomerForm extends StatelessWidget {
-  final TextEditingController _searchCustomerEmail = TextEditingController();
-  final TextEditingController _searchCustomerName = TextEditingController();
-  final TextEditingController _searchCustomerReferenceNo = TextEditingController();
-  final TextEditingController _searchDriverName = TextEditingController();
+class CustomerForm extends StatefulWidget {
 
   CustomerForm({super.key});
+
+  @override
+  State<CustomerForm> createState() => _CustomerFormState();
+}
+
+class _CustomerFormState extends State<CustomerForm> {
+  final TextEditingController _searchCustomerEmail = TextEditingController();
+
+  final TextEditingController _searchCustomerName = TextEditingController();
+
+  final TextEditingController _searchCustomerReferenceNo = TextEditingController();
+
+  final TextEditingController _searchDriverName = TextEditingController();
 
   @override
   Widget build(BuildContext context) {

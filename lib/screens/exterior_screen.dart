@@ -6,7 +6,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_custom_painter/app_utils.dart';
+import 'package:flutter_custom_painter/helpers/app_utils.dart';
 import 'package:flutter_custom_painter/screens/signature_screen.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -195,8 +195,8 @@ class _ExteriorScreenState extends State<ExteriorScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Custom Marks'),
-        backgroundColor: Colors.teal,
+        title: const Text('Marks Exterior'),
+        backgroundColor: Colors.red,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -509,7 +509,7 @@ class _ExteriorScreenState extends State<ExteriorScreen> {
           ),
           Container(
             width: MediaQuery.of(context).size.width,
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(12.0),
             child: ElevatedButton.icon(
               onPressed: () {
                 Navigator.of(context).pushNamed(SignatureScreen.routeName);

@@ -2,22 +2,36 @@
  * Created by Abdullah Razzaq on 29/08/2025.
 */
 import 'package:flutter/material.dart';
-import 'package:flutter_custom_painter/app_utils.dart';
+import 'package:flutter_custom_painter/helpers/app_utils.dart';
 import 'package:flutter_custom_painter/widgets/custom_type_ahead_field.dart';
 
-class VehicleForm extends StatelessWidget {
+class VehicleForm extends StatefulWidget {
 
-  final TextEditingController _searchVehicleByPlateNo = TextEditingController();
-  final TextEditingController _searchNewVehicle = TextEditingController();
-  final TextEditingController _searchVehicleByFleetNo = TextEditingController();
-  final TextEditingController _make = TextEditingController();
-  final TextEditingController _model = TextEditingController();
-  final TextEditingController _kmOut = TextEditingController();
-  final TextEditingController _fuelOut = TextEditingController();
-  final TextEditingController _km = TextEditingController();
-  final TextEditingController _fuel = TextEditingController();
 
   VehicleForm({super.key});
+
+  @override
+  State<VehicleForm> createState() => _VehicleFormState();
+}
+
+class _VehicleFormState extends State<VehicleForm> {
+  final TextEditingController _searchVehicleByPlateNo = TextEditingController();
+
+  final TextEditingController _searchNewVehicle = TextEditingController();
+
+  final TextEditingController _searchVehicleByFleetNo = TextEditingController();
+
+  final TextEditingController _make = TextEditingController();
+
+  final TextEditingController _model = TextEditingController();
+
+  final TextEditingController _kmOut = TextEditingController();
+
+  final TextEditingController _fuelOut = TextEditingController();
+
+  final TextEditingController _km = TextEditingController();
+
+  final TextEditingController _fuel = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
