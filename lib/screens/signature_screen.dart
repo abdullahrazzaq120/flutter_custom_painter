@@ -3,7 +3,6 @@
 */
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_painter/paint/signature_paint.dart';
-import 'package:flutter_custom_painter/screens/vehicle_select_screen.dart';
 
 class SignatureScreen extends StatefulWidget {
   static String routeName = 'signature-screen';

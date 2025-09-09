@@ -7,7 +7,7 @@ import '../widgets/custom_type_ahead_field.dart';
 
 class CustomerForm extends StatefulWidget {
 
-  CustomerForm({super.key});
+  const CustomerForm({super.key});
 
   @override
   State<CustomerForm> createState() => _CustomerFormState();
@@ -47,7 +47,7 @@ class _CustomerFormState extends State<CustomerForm> {
           },
           controller: _searchCustomerEmail,
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         CustomTypeAheadField<String>(
           suggestionsCallback: (query) async => ['John','Walter'],
           title: 'Customer Name',
@@ -69,7 +69,7 @@ class _CustomerFormState extends State<CustomerForm> {
           },
           controller: _searchCustomerName,
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         CustomTypeAheadField<String>(
           suggestionsCallback: (query) async => ['Ref1','Ref2'],
           title: 'Reference Number',
@@ -91,7 +91,7 @@ class _CustomerFormState extends State<CustomerForm> {
           },
           controller: _searchCustomerReferenceNo,
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         CustomTypeAheadField<String>(
           suggestionsCallback: (query) async => ['Driver1','Driver2'],
           title: 'Driver/Staff Name',

@@ -200,6 +200,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
+  image_marker:
+    dependency: "direct main"
+    description:
+      path: "/Users/Shared/D/PersonalProjects/FlutterProjects/image_marker"
+      relative: false
+    source: path
+    version: "0.0.2"
   image_picker:
     dependency: "direct main"
     description:
@@ -470,5 +477,5 @@ packages:
     source: hosted
     version: "1.1.0"
 sdks:
-  dart: ">=3.7.0-0 <4.0.0"
+  dart: ">=3.8.1 <4.0.0"
   flutter: ">=3.27.0"

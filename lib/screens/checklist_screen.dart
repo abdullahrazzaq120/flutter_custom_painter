@@ -2,24 +2,14 @@
  * Created by Abdullah Razzaq on 04/09/2025.
 */
 import 'package:flutter/material.dart';
-import 'package:flutter_custom_painter/screens/exterior_screen.dart';
+import 'package:flutter_custom_painter/helpers/app_utils.dart';
+import 'package:flutter_custom_painter/screens/custom_marker_screen.dart';
 import 'package:flutter_custom_painter/widgets/checklist_item.dart';
 
 class ChecklistScreen extends StatelessWidget {
   static String routeName = 'checklist-screen';
-  final List<String> items = [
-    'Air Conditioner',
-    'Antenna',
-    'Ash Tray',
-    'FE',
-    'Floor Mats',
-    'Jack',
-    'Lighter',
-    'Lights',
-    'Mulkia',
-  ];
 
-  ChecklistScreen({super.key});
+  const ChecklistScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -38,10 +28,10 @@ class ChecklistScreen extends StatelessWidget {
                 child: ListView.builder(
                   itemBuilder: (ctx, index) {
                     return ChecklistItem(
-                      title: items[index],
+                      title: AppUtils.checklistItems[index],
                     );
                   },
-                  itemCount: items.length,
+                  itemCount: AppUtils.checklistItems.length,
                 ),
               ),
               const SizedBox(height: 14),
@@ -53,7 +43,7 @@ class ChecklistScreen extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.of(context)
-                            .pushNamed(ExteriorScreen.routeName);
+                            .pushNamed(CustomMarkerScreen.routeName);
                       },
                       label: const Text("Next"),
                       style: ElevatedButton.styleFrom(

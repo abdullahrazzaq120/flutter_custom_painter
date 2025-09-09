@@ -4,10 +4,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:image_marker/mark.dart';
 import 'package:intl/intl.dart';
 
-import '../models/mark.dart';
+import '../enums/form_enum.dart';
+import '../models/home_grid_model.dart';
 import 'dart:ui' as ui;
+
+import 'custom_colors.dart';
 
 class AppUtils {
   static const double _markRadius = 20.0;
@@ -98,7 +102,8 @@ class AppUtils {
     );
   }
 
-  static void presentDatePicker(BuildContext context, DateTime? currentDate, Function(DateTime) onDatePicked) {
+  static void presentDatePicker(BuildContext context, DateTime? currentDate,
+      Function(DateTime) onDatePicked) {
     showDatePicker(
       context: context,
       initialDate: currentDate ?? DateTime.now(),
@@ -111,7 +116,8 @@ class AppUtils {
     });
   }
 
-  static Future<void> presentTimePicker(BuildContext context, Function(TimeOfDay) onTimePicked) async {
+  static Future<void> presentTimePicker(
+      BuildContext context, Function(TimeOfDay) onTimePicked) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
@@ -128,4 +134,87 @@ class AppUtils {
     final dt = DateTime(now.year, now.month, now.day, tod.hour, tod.minute);
     return DateFormat("h:mm a").format(dt);
   }
+
+  static final List<HomeGridModel> homeGridItems = [
+    const HomeGridModel(
+        text: 'Add Vehicle',
+        icon: Icons.car_crash_rounded,
+        color: CustomColors.home_vehicle_bg),
+    const HomeGridModel(
+        text: 'Add Customer',
+        icon: Icons.person_add,
+        color: CustomColors.home_customer_bg),
+    const HomeGridModel(
+      text: 'Agreement Open',
+      icon: Icons.bookmark_add,
+      color: CustomColors.home_agreement_open_bg,
+      navigationArgs: [FormEnum.customer, FormEnum.date],
+    ),
+    const HomeGridModel(
+      text: 'Agreement Check-Out',
+      icon: Icons.location_on,
+      color: CustomColors.home_agreement_out_bg,
+      navigationArgs: [FormEnum.vehicle, FormEnum.customer],
+    ),
+    const HomeGridModel(
+      text: 'Agreement Check-In',
+      icon: Icons.edit_location_sharp,
+      color: CustomColors.home_agreement_in_bg,
+      navigationArgs: [FormEnum.vehicle, FormEnum.customer, FormEnum.date],
+    ),
+    const HomeGridModel(
+      text: 'Agreement Close',
+      icon: Icons.blinds_closed,
+      color: CustomColors.home_agreement_close_bg,
+      navigationArgs: [FormEnum.customer, FormEnum.date],
+    ),
+    const HomeGridModel(
+        text: 'Staff Check-Out',
+        icon: Icons.car_crash_rounded,
+        color: CustomColors.home_staff_out_bg),
+    const HomeGridModel(
+        text: 'Staff Check-In',
+        icon: Icons.edit_location_sharp,
+        color: CustomColors.home_staff_in_bg),
+    const HomeGridModel(
+      text: 'Workshop Check-Out',
+      icon: Icons.garage,
+      color: CustomColors.home_workshop_out_bg,
+      navigationArgs: [FormEnum.date, FormEnum.workshop],
+    ),
+    const HomeGridModel(
+      text: 'Workshop Check-In',
+      icon: Icons.garage_outlined,
+      color: CustomColors.home_workshop_in_bg,
+      navigationArgs: [FormEnum.vehicle, FormEnum.date, FormEnum.workshop],
+    ),
+    const HomeGridModel(
+        text: 'Reports',
+        icon: Icons.report,
+        color: CustomColors.home_report_bg),
+    const HomeGridModel(
+        text: 'How to use',
+        icon: Icons.info,
+        color: CustomColors.home_howto_bg),
+    const HomeGridModel(
+        text: 'Web App',
+        icon: Icons.web_asset,
+        color: CustomColors.home_agreement_out_bg),
+    const HomeGridModel(
+        text: 'Global Car Rental',
+        icon: Icons.car_rental,
+        color: CustomColors.home_customer_bg),
+  ];
+
+  static final List<String> checklistItems = [
+    'Air Conditioner',
+    'Antenna',
+    'Ash Tray',
+    'FE',
+    'Floor Mats',
+    'Jack',
+    'Lighter',
+    'Lights',
+    'Mulkia',
+  ];
 }

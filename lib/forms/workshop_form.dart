@@ -8,7 +8,7 @@ import '../widgets/custom_type_ahead_field.dart';
 
 class WorkshopForm extends StatefulWidget {
 
-  WorkshopForm({super.key});
+  const WorkshopForm({super.key});
 
   @override
   State<WorkshopForm> createState() => _WorkshopFormState();

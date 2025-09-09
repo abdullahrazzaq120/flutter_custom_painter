@@ -7,8 +7,7 @@ import 'package:flutter_custom_painter/widgets/custom_type_ahead_field.dart';
 
 class VehicleForm extends StatefulWidget {
 
-
-  VehicleForm({super.key});
+  const VehicleForm({super.key});
 
   @override
   State<VehicleForm> createState() => _VehicleFormState();

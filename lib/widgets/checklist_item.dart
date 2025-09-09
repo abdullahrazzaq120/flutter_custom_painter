@@ -51,7 +51,7 @@ class _ChecklistItemState extends State<ChecklistItem> {
               ),
             ],
           ),
-          Divider(height: 2,),
+          const Divider(height: 2,),
         ],
       ),
     );

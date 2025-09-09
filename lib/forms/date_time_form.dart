@@ -8,7 +8,7 @@ import 'package:intl/intl.dart' as intl;
 
 class DateTimeForm extends StatefulWidget {
 
-  DateTimeForm({super.key});
+  const DateTimeForm({super.key});
 
   @override
   State<DateTimeForm> createState() => _DateTimeFormState();

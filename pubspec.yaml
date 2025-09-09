@@ -38,6 +38,9 @@ dependencies:
   image_picker: ^1.0.4
   flutter_typeahead: ^5.2.0
   intl: 0.18.1
+#  image_marker: ^0.0.2
+  image_marker:
+    path: /Users/Shared/D/PersonalProjects/FlutterProjects/image_marker
 
 dev_dependencies:
   flutter_test:

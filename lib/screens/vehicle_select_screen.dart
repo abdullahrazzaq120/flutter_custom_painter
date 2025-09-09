@@ -7,7 +7,6 @@ import 'package:flutter_custom_painter/forms/date_time_form.dart';
 import 'package:flutter_custom_painter/forms/vehicle_form.dart';
 import 'package:flutter_custom_painter/forms/workshop_form.dart';
 import 'package:flutter_custom_painter/screens/checklist_screen.dart';
-import 'package:flutter_custom_painter/screens/exterior_screen.dart';
 
 import '../enums/form_enum.dart';
 
