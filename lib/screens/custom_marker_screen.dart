@@ -5,14 +5,33 @@ import 'package:flutter/material.dart';
 import 'package:image_marker/mark.dart';
 import 'package:image_marker/marker_controller.dart';
 import 'package:image_marker/marker_screen.dart';
+import 'package:image_marker/sidebar_icons_enum.dart';
 
 import 'signature_screen.dart';
 
-class CustomMarkerScreen extends StatelessWidget {
-  CustomMarkerScreen({super.key});
+class CustomMarkerScreen extends StatefulWidget {
+  const CustomMarkerScreen({super.key});
 
   static String routeName = 'custom_marker_screen';
-  final markerController = MarkerController();
+
+  @override
+  State<CustomMarkerScreen> createState() => _CustomMarkerScreenState();
+}
+
+class _CustomMarkerScreenState extends State<CustomMarkerScreen> {
+  late final MarkerController markerController;
+
+  @override
+  void initState() {
+    super.initState();
+    markerController = MarkerController();
+  }
+
+  @override
+  void dispose() {
+    markerController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +60,8 @@ class CustomMarkerScreen extends StatelessWidget {
         children: [
           Expanded(
             child: MarkerScreen(
-              image: 'https://app.speedautosystems.com/app/images/suv_exterior.jpg',
+              // image: 'https://app.speedautosystems.com/app/images/suv_exterior.jpg',
+              image: 'assets/images/car_interior.jpg',
               defaultMarks: [
                 Mark(position: const Offset(161, 209), type: 1),
                 Mark(
@@ -61,12 +81,21 @@ class CustomMarkerScreen extends StatelessWidget {
               onMarkImagesClick: (images){
                 print('Mark images: $images');
               },
-              showImages: false,
               controller: markerController,
+              customCanvasIcon: 'assets/images/test_pin.png',
+              sidebarIconsEnums: const [
+                SidebarIconsEnum.FilledCircle,
+                SidebarIconsEnum.Circle,
+                // SidebarIconsEnum.Cross,
+                // SidebarIconsEnum.ScratchLine,
+                SidebarIconsEnum.Delete,
+                SidebarIconsEnum.Camera,
+                SidebarIconsEnum.CustomIcon,
+              ],
             ),
           ),
           Container(
-            width: MediaQuery.of(context).size.width,
+            width: MediaQuery.of (context).size.width,
             padding: const EdgeInsets.all(12.0),
             child: ElevatedButton.icon(
               onPressed: () {
@@ -89,8 +118,9 @@ class CustomMarkerScreen extends StatelessWidget {
               ).copyWith(
                 overlayColor: MaterialStateProperty.resolveWith<Color?>(
                     (Set<MaterialState> states) {
-                  if (states.contains(MaterialState.pressed))
+                  if (states.contains(MaterialState.pressed)) {
                     return Colors.red.shade700; // Splash color when pressed
+                  }
                   return null; // Defer to the widget's default.
                 }),
               ),
