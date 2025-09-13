@@ -18,35 +18,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  void _navigateToVehicleSelect(BuildContext context, List<FormEnum> args, String title) {
-    Navigator.pushNamed(context, VehicleSelectScreen.routeName, arguments: {'title': title, 'args' : args});
+  void _navigateToVehicleSelect(
+      BuildContext context, List<FormEnum> args, String title) {
+    Navigator.pushNamed(context, VehicleSelectScreen.routeName,
+        arguments: {'title': title, 'args': args});
   }
 
-  @override
-  void initState() {
-    init();
-    super.initState();
-  }
-
-  void init() async {
-    getCanvasSize();
-  }
-
-  final GlobalKey _firstItemKey = GlobalKey();
   double screenHeight = 0;
-
-  void getCanvasSize() async {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final RenderBox renderBox =
-          _firstItemKey.currentContext!.findRenderObject() as RenderBox;
-      final size = renderBox.size;
-
-      setState(() {
-        screenHeight = size.height - 10;
-        print(screenHeight);
-      });
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,27 +48,36 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Expanded(
               flex: 8,
-              child: Container(
-                key: _firstItemKey,
-                alignment: Alignment.center,
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 6,
-                  mainAxisSpacing: 6,
-                  childAspectRatio: (screenWidth / 2) / (screenHeight / 7.05),
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: AppUtils.homeGridItems.map((item) {
-                    return HomeGridItem(
-                      text: item.text,
-                      icon: item.icon,
-                      color: item.color,
-                      onSelected: item.navigationArgs != null
-                          ? () => _navigateToVehicleSelect(context, item.navigationArgs!, item.text)
-                          : null,
-                    );
-                  }).toList(),
-                ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final height = constraints.maxHeight - 10;
+                  screenHeight = height;
+                  print(screenHeight);
+
+                  return Container(
+                    alignment: Alignment.center,
+                    child: GridView.count(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 6,
+                      mainAxisSpacing: 6,
+                      childAspectRatio:
+                          (screenWidth / 2) / (screenHeight / 7.05),
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: AppUtils.homeGridItems.map((item) {
+                        return HomeGridItem(
+                          text: item.text,
+                          icon: item.icon,
+                          color: item.color,
+                          onSelected: item.navigationArgs != null
+                              ? () => _navigateToVehicleSelect(
+                                  context, item.navigationArgs!, item.text)
+                              : null,
+                        );
+                      }).toList(),
+                    ),
+                  );
+                },
               ),
             ),
             const Expanded(
